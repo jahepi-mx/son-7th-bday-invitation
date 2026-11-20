@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <title>Iktan - Invitación de Cumpleaños Pokémon</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ven y acompáñanos a celebrar el séptimo año de vida de Iktan" />
+    <meta property="og:title" content="Iktan - ¡Cumple 7! Invitación Pokémon" />
+    <meta property="og:url" content="https://birthday.jahepi.net" />
+    <meta property="og:description" content="Ven y acompáñanos a celebrar el séptimo año de vida de Iktan" />
+    <meta property="og:image" content="https://birthday.jahepi.net/assets/pokemon_sprites.png" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <style type="text/css">
+        * {
+            font-family: ComicalKG, sans-serif;
+        }
+
+        #canvas {
+            height: 100vh;
+            width: 100vw;
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        #title {
+            margin: 0.15em 0;
+            text-align: left;
+            color: #FFCB05;
+            font-size: 2.7em;
+            font-family: DirtyBrush, ComicalKG, sans-serif;
+            -webkit-text-stroke: 2px #2A75BB;
+            text-shadow: 3px 3px 0 #1D4E89;
+            line-height: 1.05;
+        }
+
+        .pokeball-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        #text-container {
+            border-radius: 0.6em;
+            padding: 0.65em 0.85em;
+            background: rgba(255, 255, 255, 0.82);
+            border: 3px solid #2A75BB;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+            margin-bottom: 0.65em;
+            color: #1B2A4A;
+        }
+
+        body {
+            margin: 0;
+            padding: 0.5em 0 0 0;
+            overflow-x: hidden;
+        }
+
+        .btn-pokemon {
+            background-color: #E3350D;
+            border: 2px solid #2A75BB;
+            color: #FFFFFF;
+        }
+
+        .btn-pokemon:hover {
+            background-color: #C22A0A;
+            color: #FFCB05;
+        }
+
+        .btn-confirm {
+            background-color: #2A75BB;
+            border: 2px solid #1D4E89;
+            color: #FFCB05;
+            font-weight: bold;
+        }
+
+        .btn-confirm:hover {
+            background-color: #1D4E89;
+            color: #FFFFFF;
+        }
+
+        .text-red {
+            color: #ff0000;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: white;
+        }
+
+        .text-green {
+            color: #FFCB05;
+            -webkit-text-stroke-width: 1px;
+            -webkit-text-stroke-color: #1D4E89;
+        }
+
+        @font-face {
+            font-family: DirtyBrush;
+            src: url('assets/DirtyBrush.ttf');
+        }
+
+        @font-face {
+            font-family: ComicalKG;
+            src: url('assets/ComicalKG.ttf');
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
+        crossorigin="anonymous"></script>
+    <script src="assets.js"></script>
+    <script src="atlas.js"></script>
+    <script src="animation.js"></script>
+    <script src="vector.js"></script>
+    <script src="camera.js"></script>
+    <script src="background.js"></script>
+    <script src="pokemon_walker.js"></script>
+    <script src="butterfree.js"></script>
+    <script>
+        var canvas = null;
+        var context = null;
+        var camera = new Camera();
+        var backgrounds = [];
+        var walkers = [];
+        var ambientSprites = [];
+        var prevTime = 0;
+        var groupX = 240;
+        var walkSpeed = 48;
+
+        function resizeCanvas() {
+            camera.resize(window.innerWidth, window.innerHeight);
+            canvas.width = camera.viewPortWidth;
+            canvas.height = camera.viewPortHeight;
+            if (context) {
+                context.imageSmoothingEnabled = false;
+            }
+        }
+
+        window.onload = function () {
+            canvas = document.getElementById("canvas");
+            context = canvas.getContext("2d");
+            resizeCanvas();
+            window.addEventListener("resize", resizeCanvas);
+
+            // Tap/click on the scenery to make the Pokémon & trainers do a happy jump!
+            window.addEventListener("pointerdown", function (e) {
+                if (e.target.closest("a, button, input")) return;
+                for (var i = 0; i < walkers.length; i++) {
+                    if (Math.random() < 0.75) {
+                        walkers[i].hop(110 + Math.random() * 55);
+                    }
+                }
+            });
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.imageSmoothingEnabled = false;
+            context.font = Math.floor(canvas.height * 0.04) + "px ComicalKG";
+            context.fillStyle = "#2A75BB";
+            context.textAlign = "center";
+            context.fillText("Cargando aventura Pokémon...", canvas.width / 2, canvas.height * 0.6);
+
+            var assets = Assets.getInstance();
+            assets.loadAll(onLoadAssets, onDownloadAssets);
+        };
+
+        function onDownloadAssets() {
+        }
+
+        function onLoadAssets() {
+            var atlas = Atlas.getInstance();
+            atlas.loadAll(onLoadAtlas, onDownloadAtlas);
+        }
+
+        function onDownloadAtlas() {
+        }
+
+        function onLoadAtlas() {
+            // 4-layer Kanto parallax scenery anchored to the bottom of the viewport
+            backgrounds = [
+                new Background(camera, "bg_sky", 0.18, 285, 260, "#4CA6F5"),
+                new Background(camera, "bg_mountains", 0.42, 190, 165),
+                new Background(camera, "bg_trees", 0.72, 125, 140),
+                new Background(camera, "bg_ground", 1.0, 36, 72)
+            ];
+
+            // Ambient Butterfree flying gently in the Kanto sky
+            ambientSprites = [
+                new Butterfree(camera, 80, 215),
+                new Butterfree(camera, 320, 245)
+            ];
+
+            // Ash, Misty & Brock walking in back row; Bulbasaur, Squirtle, Charmander & Pikachu walking alongside them!
+            walkers = [
+                // Trainers (back row along the Route 1 path)
+                new PokemonWalker(camera, {
+                    name: "brock",
+                    formationOffsetX: -145,
+                    yLimit: 75,
+                    width: 48,
+                    height: 68,
+                    animSpeed: 1.55,
+                    startFrame: 0,
+                    canAutoHop: false
+                }),
+                new PokemonWalker(camera, {
+                    name: "misty",
+                    formationOffsetX: -55,
+                    yLimit: 73,
+                    width: 48,
+                    height: 64,
+                    animSpeed: 1.7,
+                    startFrame: 2,
+                    canAutoHop: false
+                }),
+                new PokemonWalker(camera, {
+                    name: "ash",
+                    formationOffsetX: 38,
+                    yLimit: 73,
+                    width: 48,
+                    height: 64,
+                    animSpeed: 1.75,
+                    startFrame: 1,
+                    canAutoHop: false
+                }),
+                // Starter Pokémon & Pikachu walking right alongside them (front row)
+                new PokemonWalker(camera, {
+                    name: "bulbasaur",
+                    formationOffsetX: -102,
+                    yLimit: 45,
+                    width: 46,
+                    height: 38,
+                    animSpeed: 1.8,
+                    startFrame: 1,
+                    canAutoHop: true
+                }),
+                new PokemonWalker(camera, {
+                    name: "squirtle",
+                    formationOffsetX: -10,
+                    yLimit: 47,
+                    width: 44,
+                    height: 44,
+                    animSpeed: 1.9,
+                    startFrame: 3,
+                    canAutoHop: true
+                }),
+                new PokemonWalker(camera, {
+                    name: "charmander",
+                    formationOffsetX: 86,
+                    yLimit: 48,
+                    width: 48,
+                    height: 44,
+                    animSpeed: 1.85,
+                    startFrame: 0,
+                    canAutoHop: true
+                }),
+                new PokemonWalker(camera, {
+                    name: "pikachu",
+                    formationOffsetX: 142,
+                    yLimit: 47,
+                    width: 44,
+                    height: 44,
+                    animSpeed: 2.15,
+                    startFrame: 2,
+                    canAutoHop: true
+                })
+            ];
+
+            camera.position.x = groupX;
+            requestAnimationFrame(update);
+        }
+
+        function update(time) {
+            if (prevTime === 0) {
+                prevTime = time;
+            }
+            var dt = (time - prevTime) / 1000;
+            prevTime = time;
+
+            if (dt <= 0 || dt > 0.25) {
+                requestAnimationFrame(update);
+                return;
+            }
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.imageSmoothingEnabled = false;
+
+            // Advance the walking group continuously along the Kanto route
+            groupX += walkSpeed * dt;
+            camera.position.x += (groupX - camera.position.x) * Math.min(1, dt * 5);
+            camera.update();
+
+            for (var i = 0; i < backgrounds.length; i++) {
+                backgrounds[i].update(dt);
+                backgrounds[i].render(context);
+            }
+
+            for (var j = 0; j < ambientSprites.length; j++) {
+                ambientSprites[j].update(dt);
+                ambientSprites[j].render(context);
+            }
+
+            for (var k = 0; k < walkers.length; k++) {
+                walkers[k].update(dt, groupX);
+                walkers[k].render(context);
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function sendData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", 'https://birthday.jahepi.net/email.php', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onload = function (e) {
+                var res = xhr.responseText;
+                if (res == "ok") {
+                    document.getElementById("status").className = "text-green";
+                    document.getElementById("status").innerHTML = "¡Gracias por confirmar tu asistencia, entrenador!";
+                    document.getElementById("name").value = "";
+                } else {
+                    document.getElementById("status").className = "text-red";
+                    document.getElementById("status").innerHTML = "Hubo un error, escribe tu nombre.";
+                }
+            };
+            xhr.send("name=" + encodeURIComponent(document.getElementById("name").value));
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-sm-12 col-md-10 col-lg-6 mx-auto">
+                <div class="row align-items-center mb-1">
+                    <div class="col-8">
+                        <h3 id="title">
+                            <svg class="pokeball-badge" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true">
+                                <circle cx="16" cy="16" r="14" fill="#FFFFFF" stroke="#1E1E24" stroke-width="2.5" />
+                                <path d="M2 16 A14 14 0 0 1 30 16 Z" fill="#E3350D" stroke="#1E1E24"
+                                    stroke-width="2.5" />
+                                <line x1="2" y1="16" x2="30" y2="16" stroke="#1E1E24" stroke-width="3" />
+                                <circle cx="16" cy="16" r="4.5" fill="#FFFFFF" stroke="#1E1E24" stroke-width="2.5" />
+                            </svg>
+                            ¡Iktan cumple 7!
+                        </h3>
+                    </div>
+                    <div class="col-4 text-end">
+                        <a style="margin: .2em;" class="btn btn-pokemon"
+                            href="https://maps.app.goo.gl/zS73mS8HSdbM2xYQ9" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                <path
+                                    d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z">
+                                </path>
+                            </svg>
+                            Ubicación
+                        </a>
+                    </div>
+                </div>
+
+                <div id="text-container">
+                    ¡Hola entrenador! Voy a cumplir <strong>7 años</strong> y me gustaría que estuvieras conmigo en esta
+                    aventura Pokémon para divertirnos juntos.
+                    <br />Te esperamos el sábado <strong>19 de Diciembre</strong> a partir de las <strong>2:30
+                        PM</strong>.
+                    <span style="color:#E3350D; font-weight:bold;">¡Atrápalos ya y no falten!</span>
+                </div>
+                <div class="input-group mb-2">
+                    <input id="name" name="name" type="text" class="form-control" placeholder="Escribe tu nombre"
+                        aria-label="Nombre" aria-describedby="basic-addon2">
+                    <button class="btn btn-confirm" type="button" onclick="sendData()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-arrow-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z">
+                            </path>
+                        </svg>
+                        Confirmar
+                    </button>
+                </div>
+                <div id="status"></div>
+                <span style="font-family: ComicalKG; display: none">Hidden text just for loading font before
+                    canvas.</span>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" name="canvas"></canvas>
+</body>
+
+</html>
