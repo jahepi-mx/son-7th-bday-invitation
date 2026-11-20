@@ -385,8 +385,8 @@
             xhr.open("POST", 'email.php', true);
             xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
             xhr.onload = function (e) {
-                var res = xhr.responseText;
-                if (res == "ok") {
+                var res = (xhr.responseText || "").trim();
+                if (xhr.status >= 200 && xhr.status < 300 && res === "ok") {
                     statusEl.className = "text-green";
                     statusEl.textContent = "¡Gracias por confirmar tu asistencia, entrenador!";
                     nameInput.value = "";
@@ -394,6 +394,7 @@
                     nameInput.classList.remove("is-invalid");
                     attendeesInput.classList.remove("is-invalid");
                 } else {
+                    console.error("RSVP error:", xhr.status, xhr.responseText);
                     statusEl.className = "text-red";
                     statusEl.textContent = "Hubo un error, verifica tu nombre y el número de asistentes.";
                 }
