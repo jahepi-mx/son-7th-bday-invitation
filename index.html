@@ -345,68 +345,68 @@
             requestAnimationFrame(update);
         }
 
-            function sendData(event) {
-                if (event) {
-                    event.preventDefault();
-                }
-
-                var nameInput = document.getElementById("name");
-                var attendeesInput = document.getElementById("attendees");
-                var statusEl = document.getElementById("status");
-
-                var nameValue = nameInput.value.trim();
-                var attendeesRaw = attendeesInput.value.trim();
-                var attendeesValue = parseInt(attendeesRaw, 10);
-
-                var nameValid = nameValue.length > 0;
-                var attendeesValid = attendeesRaw !== "" && !isNaN(attendeesValue) && attendeesValue >= 1;
-
-                nameInput.classList.toggle("is-invalid", !nameValid);
-                attendeesInput.classList.toggle("is-invalid", !attendeesValid);
-
-                if (!nameValid || !attendeesValid) {
-                    statusEl.className = "text-red";
-                    if (!nameValid && !attendeesValid) {
-                        statusEl.textContent = "Por favor escribe tu nombre y el número de asistentes (campos obligatorios).";
-                    } else if (!nameValid) {
-                        statusEl.textContent = "Por favor escribe tu nombre (campo obligatorio).";
-                    } else {
-                        statusEl.textContent = "Por favor indica cuántos asistentes vendrán (mínimo 1).";
-                    }
-                    if (!nameValid) {
-                        nameInput.focus();
-                    } else {
-                        attendeesInput.focus();
-                    }
-                    return;
-                }
-
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", 'https://birthday.jahepi.net/email.php', true);
-                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                xhr.onload = function (e) {
-                    var res = xhr.responseText;
-                    if (res == "ok") {
-                        statusEl.className = "text-green";
-                        statusEl.textContent = "¡Gracias por confirmar tu asistencia, entrenador!";
-                        nameInput.value = "";
-                        attendeesInput.value = "";
-                        nameInput.classList.remove("is-invalid");
-                        attendeesInput.classList.remove("is-invalid");
-                    } else {
-                        statusEl.className = "text-red";
-                        statusEl.textContent = "Hubo un error, verifica tu nombre y el número de asistentes.";
-                    }
-                };
-                xhr.onerror = function () {
-                    statusEl.className = "text-red";
-                    statusEl.textContent = "No se pudo enviar la confirmación. Intenta de nuevo.";
-                };
-                xhr.send(
-                    "name=" + encodeURIComponent(nameValue) +
-                    "&attendees=" + encodeURIComponent(attendeesValue)
-                );
+        function sendData(event) {
+            if (event) {
+                event.preventDefault();
             }
+
+            var nameInput = document.getElementById("name");
+            var attendeesInput = document.getElementById("attendees");
+            var statusEl = document.getElementById("status");
+
+            var nameValue = nameInput.value.trim();
+            var attendeesRaw = attendeesInput.value.trim();
+            var attendeesValue = parseInt(attendeesRaw, 10);
+
+            var nameValid = nameValue.length > 0;
+            var attendeesValid = attendeesRaw !== "" && !isNaN(attendeesValue) && attendeesValue >= 1;
+
+            nameInput.classList.toggle("is-invalid", !nameValid);
+            attendeesInput.classList.toggle("is-invalid", !attendeesValid);
+
+            if (!nameValid || !attendeesValid) {
+                statusEl.className = "text-red";
+                if (!nameValid && !attendeesValid) {
+                    statusEl.textContent = "Por favor escribe tu nombre y el número de asistentes (campos obligatorios).";
+                } else if (!nameValid) {
+                    statusEl.textContent = "Por favor escribe tu nombre (campo obligatorio).";
+                } else {
+                    statusEl.textContent = "Por favor indica cuántos asistentes vendrán (mínimo 1).";
+                }
+                if (!nameValid) {
+                    nameInput.focus();
+                } else {
+                    attendeesInput.focus();
+                }
+                return;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", 'https://iktan.jahepi.net/email.php', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onload = function (e) {
+                var res = xhr.responseText;
+                if (res == "ok") {
+                    statusEl.className = "text-green";
+                    statusEl.textContent = "¡Gracias por confirmar tu asistencia, entrenador!";
+                    nameInput.value = "";
+                    attendeesInput.value = "";
+                    nameInput.classList.remove("is-invalid");
+                    attendeesInput.classList.remove("is-invalid");
+                } else {
+                    statusEl.className = "text-red";
+                    statusEl.textContent = "Hubo un error, verifica tu nombre y el número de asistentes.";
+                }
+            };
+            xhr.onerror = function () {
+                statusEl.className = "text-red";
+                statusEl.textContent = "No se pudo enviar la confirmación. Intenta de nuevo.";
+            };
+            xhr.send(
+                "name=" + encodeURIComponent(nameValue) +
+                "&attendees=" + encodeURIComponent(attendeesValue)
+            );
+        }
     </script>
 </head>
 
