@@ -6,6 +6,7 @@ class Camera {
         this.worldWidth = 2000;
         this.worldHeight = 400;
         this.infinite = true;
+        this.bottomMargin = 0;
         this.offset = new Vector();
         this.offset.x = 0;
         this.offset.y = this.viewPortHeight;
@@ -17,11 +18,13 @@ class Camera {
         if (aspect >= 1.15) {
             this.viewPortHeight = 400;
             this.viewPortWidth = Math.max(460, Math.min(720, Math.round(400 * aspect)));
+            this.bottomMargin = 0;
         } else {
             this.viewPortWidth = 400;
             this.viewPortHeight = Math.max(400, Math.min(740, Math.round(400 / Math.max(0.45, aspect))));
+            this.bottomMargin = 48;
         }
-        this.offset.y = this.viewPortHeight;
+        this.offset.y = this.viewPortHeight - this.bottomMargin;
     }
 
     update() {

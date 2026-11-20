@@ -1,5 +1,5 @@
 class Background {
-    constructor(camera, image, ratio, y, height, fillTopColor) {
+    constructor(camera, image, ratio, y, height, fillTopColor, fillBottomColor) {
         this.camera = camera;
         this.atlas = Atlas.getInstance();
         this.assets = Assets.getInstance();
@@ -9,6 +9,7 @@ class Background {
         this.height = height;
         this.tileWidth = 480;
         this.fillTopColor = fillTopColor || null;
+        this.fillBottomColor = fillBottomColor || null;
 
         this.positionA = new Vector();
         this.sizeA = new Vector();
@@ -38,6 +39,12 @@ class Background {
         if (this.fillTopColor && drawY > 0) {
             context.fillStyle = this.fillTopColor;
             context.fillRect(0, 0, this.camera.viewPortWidth, Math.ceil(drawY) + 2);
+        }
+
+        if (this.fillBottomColor && drawY + this.height < this.camera.viewPortHeight) {
+            context.fillStyle = this.fillBottomColor;
+            var bottomY = Math.floor(drawY + this.height) - 1;
+            context.fillRect(0, bottomY, this.camera.viewPortWidth, this.camera.viewPortHeight - bottomY + 2);
         }
 
         var tileW = this.tileWidth;

@@ -22,6 +22,7 @@
 
         #canvas {
             height: 100vh;
+            height: 100dvh;
             width: 100vw;
             display: block;
             position: fixed;
@@ -160,7 +161,9 @@
         var walkSpeed = 48;
 
         function resizeCanvas() {
-            camera.resize(window.innerWidth, window.innerHeight);
+            var vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+            var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            camera.resize(vw, vh);
             canvas.width = camera.viewPortWidth;
             canvas.height = camera.viewPortHeight;
             if (context) {
@@ -173,6 +176,9 @@
             context = canvas.getContext("2d");
             resizeCanvas();
             window.addEventListener("resize", resizeCanvas);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener("resize", resizeCanvas);
+            }
 
             // Tap/click on the scenery to make the Pokémon & trainers do a happy jump!
             window.addEventListener("pointerdown", function (e) {
@@ -212,7 +218,7 @@
                 new Background(camera, "bg_sky", 0.18, 285, 260, "#4CA6F5"),
                 new Background(camera, "bg_mountains", 0.42, 190, 165),
                 new Background(camera, "bg_trees", 0.72, 125, 140),
-                new Background(camera, "bg_ground", 1.0, 36, 72)
+                new Background(camera, "bg_ground", 1.0, 36, 72, null, "#2D873A")
             ];
 
             // Ambient Butterfree flying gently in the Kanto sky
