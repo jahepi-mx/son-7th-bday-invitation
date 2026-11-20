@@ -91,16 +91,32 @@
             color: #FFFFFF;
         }
 
+        #status:empty {
+            display: none;
+        }
+
+        #status {
+            border-radius: 0.6em;
+            padding: 0.6em 0.9em;
+            margin-top: 0.45em;
+            font-size: 0.95em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
         .text-red {
-            color: #ff0000;
-            -webkit-text-stroke-width: 1px;
-            -webkit-text-stroke-color: white;
+            background-color: #D92B2B;
+            color: #FFFFFF;
+            border: 2px solid #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .text-green {
-            color: #FFCB05;
-            -webkit-text-stroke-width: 1px;
-            -webkit-text-stroke-color: #1D4E89;
+            background-color: #1B873F;
+            color: #FFFFFF;
+            border: 2px solid #FFCB05;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .rsvp-form {
@@ -367,9 +383,9 @@
             if (!nameValid || !attendeesValid) {
                 statusEl.className = "text-red";
                 if (!nameValid && !attendeesValid) {
-                    statusEl.textContent = "Por favor escribe tu nombre y el número de asistentes (campos obligatorios).";
+                    statusEl.textContent = "Por favor escribe tu nombre y el número de asistentes.";
                 } else if (!nameValid) {
-                    statusEl.textContent = "Por favor escribe tu nombre (campo obligatorio).";
+                    statusEl.textContent = "Por favor escribe tu nombre.";
                 } else {
                     statusEl.textContent = "Por favor indica cuántos asistentes vendrán (mínimo 1).";
                 }
@@ -483,7 +499,7 @@
                     </div>
                     <div class="required-note"><span class="required-mark">*</span> Campos obligatorios</div>
                 </form>
-                <div id="status"></div>
+                <div id="status" role="status" aria-live="polite"></div>
                 <span style="font-family: ComicalKG; display: none">Hidden text just for loading font before
                     canvas.</span>
             </div>
