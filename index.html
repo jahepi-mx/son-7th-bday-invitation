@@ -7,9 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Ven y acompáñanos a celebrar el séptimo año de vida de Iktan" />
     <meta property="og:title" content="Iktan - ¡Cumple 7! Invitación Pokémon" />
-    <meta property="og:url" content="https://birthday.jahepi.net" />
+    <meta property="og:url" content="https://iktan.jahepi.net" />
     <meta property="og:description" content="Ven y acompáñanos a celebrar el séptimo año de vida de Iktan" />
-    <meta property="og:image" content="https://birthday.jahepi.net/assets/pokemon_sprites.png" />
+    <meta property="og:image" content="https://birthday.jahepi.net/assets/pikachu.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="600" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <style type="text/css">
@@ -99,6 +102,31 @@
             -webkit-text-stroke-color: #1D4E89;
         }
 
+        .rsvp-form {
+            background: rgba(255, 255, 255, 0.82);
+            border: 2px solid #2A75BB;
+            border-radius: 0.6em;
+            padding: 0.55em 0.75em;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+        }
+
+        .rsvp-form .form-label {
+            margin-bottom: 0.15em;
+            font-size: 0.85em;
+            color: #1B2A4A;
+        }
+
+        .required-mark {
+            color: #E3350D;
+            font-weight: bold;
+        }
+
+        .required-note {
+            font-size: 0.75em;
+            color: #4A5568;
+            margin-top: 0.25em;
+        }
+
         @font-face {
             font-family: DirtyBrush;
             src: url('assets/DirtyBrush.ttf');
@@ -148,7 +176,7 @@
 
             // Tap/click on the scenery to make the Pokémon & trainers do a happy jump!
             window.addEventListener("pointerdown", function (e) {
-                if (e.target.closest("a, button, input")) return;
+                if (e.target.closest("a, button, input, label, form")) return;
                 for (var i = 0; i < walkers.length; i++) {
                     if (Math.random() < 0.75) {
                         walkers[i].hop(110 + Math.random() * 55);
@@ -311,23 +339,68 @@
             requestAnimationFrame(update);
         }
 
-        function sendData() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", 'https://birthday.jahepi.net/email.php', true);
-            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-            xhr.onload = function (e) {
-                var res = xhr.responseText;
-                if (res == "ok") {
-                    document.getElementById("status").className = "text-green";
-                    document.getElementById("status").innerHTML = "¡Gracias por confirmar tu asistencia, entrenador!";
-                    document.getElementById("name").value = "";
-                } else {
-                    document.getElementById("status").className = "text-red";
-                    document.getElementById("status").innerHTML = "Hubo un error, escribe tu nombre.";
+            function sendData(event) {
+                if (event) {
+                    event.preventDefault();
                 }
-            };
-            xhr.send("name=" + encodeURIComponent(document.getElementById("name").value));
-        }
+
+                var nameInput = document.getElementById("name");
+                var attendeesInput = document.getElementById("attendees");
+                var statusEl = document.getElementById("status");
+
+                var nameValue = nameInput.value.trim();
+                var attendeesRaw = attendeesInput.value.trim();
+                var attendeesValue = parseInt(attendeesRaw, 10);
+
+                var nameValid = nameValue.length > 0;
+                var attendeesValid = attendeesRaw !== "" && !isNaN(attendeesValue) && attendeesValue >= 1;
+
+                nameInput.classList.toggle("is-invalid", !nameValid);
+                attendeesInput.classList.toggle("is-invalid", !attendeesValid);
+
+                if (!nameValid || !attendeesValid) {
+                    statusEl.className = "text-red";
+                    if (!nameValid && !attendeesValid) {
+                        statusEl.textContent = "Por favor escribe tu nombre y el número de asistentes (campos obligatorios).";
+                    } else if (!nameValid) {
+                        statusEl.textContent = "Por favor escribe tu nombre (campo obligatorio).";
+                    } else {
+                        statusEl.textContent = "Por favor indica cuántos asistentes vendrán (mínimo 1).";
+                    }
+                    if (!nameValid) {
+                        nameInput.focus();
+                    } else {
+                        attendeesInput.focus();
+                    }
+                    return;
+                }
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", 'https://birthday.jahepi.net/email.php', true);
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.onload = function (e) {
+                    var res = xhr.responseText;
+                    if (res == "ok") {
+                        statusEl.className = "text-green";
+                        statusEl.textContent = "¡Gracias por confirmar tu asistencia, entrenador!";
+                        nameInput.value = "";
+                        attendeesInput.value = "";
+                        nameInput.classList.remove("is-invalid");
+                        attendeesInput.classList.remove("is-invalid");
+                    } else {
+                        statusEl.className = "text-red";
+                        statusEl.textContent = "Hubo un error, verifica tu nombre y el número de asistentes.";
+                    }
+                };
+                xhr.onerror = function () {
+                    statusEl.className = "text-red";
+                    statusEl.textContent = "No se pudo enviar la confirmación. Intenta de nuevo.";
+                };
+                xhr.send(
+                    "name=" + encodeURIComponent(nameValue) +
+                    "&attendees=" + encodeURIComponent(attendeesValue)
+                );
+            }
     </script>
 </head>
 
@@ -370,19 +443,39 @@
                         PM</strong>.
                     <span style="color:#E3350D; font-weight:bold;">¡Atrápalos ya y no falten!</span>
                 </div>
-                <div class="input-group mb-2">
-                    <input id="name" name="name" type="text" class="form-control" placeholder="Escribe tu nombre"
-                        aria-label="Nombre" aria-describedby="basic-addon2">
-                    <button class="btn btn-confirm" type="button" onclick="sendData()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-arrow-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd"
-                                d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z">
-                            </path>
-                        </svg>
-                        Confirmar
-                    </button>
-                </div>
+                <form id="rsvp-form" class="rsvp-form mb-2" onsubmit="sendData(event)" novalidate>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12 col-sm-6">
+                            <label for="name" class="form-label">Nombre <span class="required-mark"
+                                    aria-hidden="true">*</span></label>
+                            <input id="name" name="name" type="text" class="form-control form-control-sm"
+                                placeholder="Escribe tu nombre" aria-label="Nombre (obligatorio)" required
+                                oninput="this.classList.remove('is-invalid')">
+                            <div class="invalid-feedback">Tu nombre es obligatorio.</div>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <label for="attendees" class="form-label">Asistentes <span class="required-mark"
+                                    aria-hidden="true">*</span></label>
+                            <input id="attendees" name="attendees" type="number" min="1" max="20" step="1"
+                                inputmode="numeric" class="form-control form-control-sm" placeholder="Ej. 2"
+                                aria-label="Número de asistentes (obligatorio)" required
+                                oninput="this.classList.remove('is-invalid')">
+                            <div class="invalid-feedback">Indica al menos 1.</div>
+                        </div>
+                        <div class="col-6 col-sm-3 d-grid">
+                            <button class="btn btn-confirm btn-sm" type="submit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z">
+                                    </path>
+                                </svg>
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="required-note"><span class="required-mark">*</span> Campos obligatorios</div>
+                </form>
                 <div id="status"></div>
                 <span style="font-family: ComicalKG; display: none">Hidden text just for loading font before
                     canvas.</span>
